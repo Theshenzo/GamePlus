@@ -1,243 +1,37 @@
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GamePlus</title>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<style>
-
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:tahoma;
-}
-
-body{
-background:#0f172a;
-color:white;
-padding:20px;
-}
-
-h1{
-text-align:center;
-margin-bottom:20px;
-color:#00d4ff;
-}
-
-.container{
-max-width:700px;
-margin:auto;
-}
-
-.card{
-background:#1e293b;
-padding:20px;
-border-radius:15px;
-margin-bottom:20px;
-}
-
-input,select{
-width:100%;
-padding:12px;
-margin-top:10px;
-border:none;
-border-radius:8px;
-}
-
-button{
-padding:12px;
-border:none;
-border-radius:8px;
-cursor:pointer;
-background:#00d4ff;
-font-weight:bold;
-margin-top:10px;
-}
-
-table{
-width:100%;
-border-collapse:collapse;
-margin-top:15px;
-}
-
-td,th{
-padding:10px;
-border:1px solid #334155;
-text-align:center;
-}
-
-.deleteBtn{
-background:red;
-color:white;
-}
-
-.success{
-margin-top:10px;
-color:#00ff88;
-}
-
-</style>
-</head>
-
-<body>
-
-<div class="container">
-
-<h1>🎮 GamePlus</h1>
-
-<div class="card">
-
-<h2>ثبت رزرو</h2>
-
-<input id="name" placeholder="نام">
-
-<input id="phone" placeholder="شماره موبایل">
-
-<select id="device">
-<option>PS5</option>
-<option>PS4</option>
-<option>PC</option>
-</select>
-
-<input id="date" type="date">
-
-<button onclick="saveReservation()">ثبت رزرو</button>
-
-<div id="msg"></div>
-
-</div>
-
-<div class="card">
-
-<h2>پنل مدیریت</h2>
-
-<button onclick="loadReservations()">بروزرسانی لیست</button>
-
-<table>
-
-<thead>
-<tr>
-<th>نام</th>
-<th>موبایل</th>
-<th>دستگاه</th>
-<th>تاریخ</th>
-<th>عملیات</th>
-</tr>
-</thead>
-
-<tbody id="reservationsBody"></tbody>
-
-</table>
-
-</div>
-
-</div>
-
 <script>
+const supabaseUrl = "https://vavknjxpypmqvhjouocj.supabase.co";
+const supabaseKey = "API_KEY_خودت";
 
-const SUPABASE_URL =
-"https://vavknjxpypmqvhjouocj.supabase.co";
-
-const SUPABASE_KEY =
-"PASTE_YOUR_KEY_HERE";
-
-const supabaseClient =
-supabase.createClient(
-SUPABASE_URL,
-SUPABASE_KEY
+const supabaseClient = supabase.createClient(
+  supabaseUrl,
+  supabaseKey
 );
 
-async function saveReservation(){
+async function saveReservation() {
 
-const name=document.getElementById("name").value;
-const phone=document.getElementById("phone").value;
-const device=document.getElementById("device").value;
-const date=document.getElementById("date").value;
+  const name = document.getElementById("name").value;
+  const phone = document.getElementById("phone").value;
+  const device = document.getElementById("device").value;
+  const date = document.getElementById("date").value;
 
-const {error}=await supabaseClient
-.from("reservations")
-.insert([
-{
-name,
-phone,
-device,
-date
+  const { error } = await supabaseClient
+    .from("reservations")
+    .insert([
+      {
+        name,
+        phone,
+        device,
+        date
+      }
+    ]);
+
+  if(error){
+    alert("خطا در ثبت رزرو");
+    console.log(error);
+  }else{
+    alert("رزرو با موفقیت ثبت شد");
+  }
 }
-]);
-
-if(error){
-document.getElementById("msg").innerHTML=
-"❌ خطا در ثبت رزرو";
-console.log(error);
-return;
-}
-
-document.getElementById("msg").innerHTML=
-"<div class='success'>✅ رزرو ثبت شد</div>";
-
-loadReservations();
-}
-
-async function loadReservations(){
-
-const {data,error}=await supabaseClient
-.from("reservations")
-.select("*")
-.order("id",{ascending:false});
-
-if(error){
-console.log(error);
-return;
-}
-
-let html="";
-
-data.forEach(item=>{
-
-html+=`
-<tr>
-<td>${item.name}</td>
-<td>${item.phone}</td>
-<td>${item.device}</td>
-<td>${item.date}</td>
-<td>
-<button class="deleteBtn"
-onclick="deleteReservation(${item.id})">
-حذف
-</button>
-</td>
-</tr>
-`;
-
-});
-
-document.getElementById("reservationsBody").innerHTML=html;
-
-}
-
-async function deleteReservation(id){
-
-const {error}=await supabaseClient
-.from("reservations")
-.delete()
-.eq("id",id);
-
-if(error){
-alert("خطا در حذف");
-return;
-}
-
-loadReservations();
-
-}
-
-loadReservations();
-
 </script>
-
-</body>
-</html>
