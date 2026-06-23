@@ -35,3 +35,49 @@ async function saveReservation() {
   }
 }
 </script>
+
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <title>GamePlus</title>
+</head>
+
+<body>
+
+    <!-- محتوای فعلی سایت -->
+
+    <h1>GamePlus</h1>
+
+    <!-- فرم رزرو -->
+    <div class="reservation-box">
+
+        <h2>رزرو آنلاین</h2>
+
+        <input id="name" placeholder="نام">
+
+        <input id="phone" placeholder="شماره موبایل">
+
+        <select id="device">
+            <option>PS5</option>
+            <option>PS4</option>
+            <option>PC</option>
+        </select>
+
+        <input id="date" type="date">
+
+        <button onclick="saveReservation()">
+            ثبت رزرو
+        </button>
+
+    </div>
+
+    <!-- کد Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+      // کد اتصال Supabase اینجا
+    </script>
+
+</body>
+</html>
