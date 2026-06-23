@@ -8,86 +8,132 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:tahoma;
+}
+
 body{
-    margin:0;
-    font-family:tahoma;
-    background:#0d1117;
-    color:white;
+background:#0f172a;
+color:white;
+padding:20px;
 }
 
-.header{
-    text-align:center;
-    padding:40px 20px;
-}
-
-.header h1{
-    color:#00d4ff;
-    font-size:48px;
+h1{
+text-align:center;
+margin-bottom:20px;
+color:#00d4ff;
 }
 
 .container{
-    max-width:500px;
-    margin:auto;
-    background:#161b22;
-    padding:25px;
-    border-radius:15px;
-    box-shadow:0 0 20px rgba(0,212,255,.3);
+max-width:700px;
+margin:auto;
+}
+
+.card{
+background:#1e293b;
+padding:20px;
+border-radius:15px;
+margin-bottom:20px;
 }
 
 input,select{
-    width:100%;
-    padding:12px;
-    margin:8px 0;
-    border:none;
-    border-radius:8px;
-    font-size:16px;
+width:100%;
+padding:12px;
+margin-top:10px;
+border:none;
+border-radius:8px;
 }
 
 button{
-    width:100%;
-    padding:12px;
-    background:#00d4ff;
-    border:none;
-    border-radius:8px;
-    font-size:18px;
-    cursor:pointer;
+padding:12px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+background:#00d4ff;
+font-weight:bold;
+margin-top:10px;
 }
 
-button:hover{
-    opacity:.9;
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:15px;
 }
 
-#result{
-    margin-top:15px;
-    text-align:center;
+td,th{
+padding:10px;
+border:1px solid #334155;
+text-align:center;
 }
+
+.deleteBtn{
+background:red;
+color:white;
+}
+
+.success{
+margin-top:10px;
+color:#00ff88;
+}
+
 </style>
 </head>
 
 <body>
 
-<div class="header">
-    <h1>🎮 GamePlus</h1>
-    <p>رزرو آنلاین کنسول و کامپیوتر</p>
-</div>
-
 <div class="container">
 
-    <input type="text" id="name" placeholder="نام و نام خانوادگی">
+<h1>🎮 GamePlus</h1>
 
-    <input type="text" id="phone" placeholder="شماره موبایل">
+<div class="card">
 
-    <select id="device">
-        <option>PS5</option>
-        <option>PS4</option>
-        <option>PC</option>
-    </select>
+<h2>ثبت رزرو</h2>
 
-    <input type="date" id="date">
+<input id="name" placeholder="نام">
 
-    <button onclick="reserve()">ثبت رزرو</button>
+<input id="phone" placeholder="شماره موبایل">
 
-    <div id="result"></div>
+<select id="device">
+<option>PS5</option>
+<option>PS4</option>
+<option>PC</option>
+</select>
+
+<input id="date" type="date">
+
+<button onclick="saveReservation()">ثبت رزرو</button>
+
+<div id="msg"></div>
+
+</div>
+
+<div class="card">
+
+<h2>پنل مدیریت</h2>
+
+<button onclick="loadReservations()">بروزرسانی لیست</button>
+
+<table>
+
+<thead>
+<tr>
+<th>نام</th>
+<th>موبایل</th>
+<th>دستگاه</th>
+<th>تاریخ</th>
+<th>عملیات</th>
+</tr>
+</thead>
+
+<tbody id="reservationsBody"></tbody>
+
+</table>
+
+</div>
 
 </div>
 
@@ -97,14 +143,15 @@ const SUPABASE_URL =
 "https://vavknjxpypmqvhjouocj.supabase.co";
 
 const SUPABASE_KEY =
-"sb_publishable_7CDDTZCxAS1rV25Zpam1sg_1dlNW-4h";
+"PASTE_YOUR_KEY_HERE";
 
-const supabaseClient = supabase.createClient(
+const supabaseClient =
+supabase.createClient(
 SUPABASE_URL,
 SUPABASE_KEY
 );
 
-async function reserve(){
+async function saveReservation(){
 
 const name=document.getElementById("name").value;
 const phone=document.getElementById("phone").value;
@@ -115,23 +162,81 @@ const {error}=await supabaseClient
 .from("reservations")
 .insert([
 {
-name:name,
-phone:phone,
-device:device,
-date:date
+name,
+phone,
+device,
+date
 }
 ]);
 
 if(error){
-document.getElementById("result").innerHTML=
+document.getElementById("msg").innerHTML=
 "❌ خطا در ثبت رزرو";
 console.log(error);
+return;
 }
-else{
-document.getElementById("result").innerHTML=
-"✅ رزرو با موفقیت ثبت شد";
+
+document.getElementById("msg").innerHTML=
+"<div class='success'>✅ رزرو ثبت شد</div>";
+
+loadReservations();
 }
+
+async function loadReservations(){
+
+const {data,error}=await supabaseClient
+.from("reservations")
+.select("*")
+.order("id",{ascending:false});
+
+if(error){
+console.log(error);
+return;
 }
+
+let html="";
+
+data.forEach(item=>{
+
+html+=`
+<tr>
+<td>${item.name}</td>
+<td>${item.phone}</td>
+<td>${item.device}</td>
+<td>${item.date}</td>
+<td>
+<button class="deleteBtn"
+onclick="deleteReservation(${item.id})">
+حذف
+</button>
+</td>
+</tr>
+`;
+
+});
+
+document.getElementById("reservationsBody").innerHTML=html;
+
+}
+
+async function deleteReservation(id){
+
+const {error}=await supabaseClient
+.from("reservations")
+.delete()
+.eq("id",id);
+
+if(error){
+alert("خطا در حذف");
+return;
+}
+
+loadReservations();
+
+}
+
+loadReservations();
+
 </script>
 
 </body>
